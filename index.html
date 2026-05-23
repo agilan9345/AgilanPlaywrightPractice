@@ -1,0 +1,2571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QA Automation Practice Playground</title>
+<style>
+  /* ===== DESIGN SYSTEM ===== */
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #0b0d11;
+    --surface: #13161d;
+    --surface2: #1c2030;
+    --border: #2a2f3d;
+    --accent: #00e5a0;
+    --accent2: #7b61ff;
+    --accent3: #ff6b6b;
+    --accent4: #ffd93d;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --success: #00e5a0;
+    --error: #ff6b6b;
+    --warning: #ffd93d;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Syne', sans-serif;
+    --radius: 8px;
+    --radius-lg: 14px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    background: rgba(11,13,17,0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .site-header .logo {
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--accent);
+    font-family: var(--mono);
+  }
+
+  .site-header .logo span { color: var(--text-muted); }
+
+  .toc-toggle {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 12px;
+    transition: all 0.2s;
+  }
+
+  .toc-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ===== TABLE OF CONTENTS ===== */
+  #toc-panel {
+    display: none;
+    position: fixed;
+    top: 60px;
+    right: 16px;
+    z-index: 998;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    width: 260px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+  }
+
+  #toc-panel.open { display: block; }
+
+  #toc-panel h3 {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  #toc-panel a {
+    display: block;
+    padding: 4px 8px;
+    color: var(--text-dim);
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: var(--mono);
+    transition: all 0.15s;
+  }
+
+  #toc-panel a:hover { background: var(--surface2); color: var(--accent); }
+
+  /* ===== LAYOUT ===== */
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  /* ===== SECTION CARDS ===== */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px 32px;
+    margin-bottom: 28px;
+    position: relative;
+    transition: border-color 0.3s;
+  }
+
+  .section:hover { border-color: #2f3a55; }
+
+  .section-number {
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background: var(--accent);
+    color: #000;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+  }
+
+  .section h2 {
+    font-family: var(--sans);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+    padding-top: 6px;
+  }
+
+  .section .section-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 14px;
+  }
+
+  /* ===== FORM ELEMENTS ===== */
+  .form-group { margin-bottom: 14px; }
+
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="date"],
+  input[type="number"],
+  textarea,
+  select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    font-family: var(--mono);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,229,160,0.08);
+  }
+
+  input::placeholder, textarea::placeholder { color: var(--text-muted); }
+
+  textarea { resize: vertical; min-height: 80px; }
+
+  select option { background: var(--surface2); }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 18px;
+    border-radius: var(--radius);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+
+  .btn-primary:hover { background: #00c988; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,229,160,0.25); }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-danger {
+    background: var(--error);
+    color: #fff;
+  }
+
+  .btn-danger:hover { background: #e05555; }
+
+  .btn-warning {
+    background: var(--warning);
+    color: #000;
+  }
+
+  .btn-purple {
+    background: var(--accent2);
+    color: #fff;
+  }
+
+  .btn-purple:hover { background: #6a50e0; }
+
+  .btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  .btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+
+  /* ===== CHECKBOXES & RADIOS ===== */
+  .check-group { display: flex; flex-direction: column; gap: 10px; }
+
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  .check-item input[type="checkbox"],
+  .check-item input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  /* ===== BADGE / TAG ===== */
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-family: var(--mono);
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .badge-green { background: rgba(0,229,160,0.15); color: var(--accent); border: 1px solid rgba(0,229,160,0.3); }
+  .badge-red { background: rgba(255,107,107,0.15); color: var(--error); border: 1px solid rgba(255,107,107,0.3); }
+  .badge-yellow { background: rgba(255,217,61,0.15); color: var(--warning); border: 1px solid rgba(255,217,61,0.3); }
+  .badge-purple { background: rgba(123,97,255,0.15); color: var(--accent2); border: 1px solid rgba(123,97,255,0.3); }
+
+  /* ===== OUTPUT BOX ===== */
+  .output {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    min-height: 36px;
+    margin-top: 12px;
+    word-break: break-all;
+  }
+
+  /* ===== TABLE ===== */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  .data-table th {
+    background: var(--surface2);
+    color: var(--accent);
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    letter-spacing: 0.5px;
+  }
+
+  .data-table th:hover { color: var(--text); }
+
+  .data-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(42,47,61,0.6);
+    color: var(--text-dim);
+  }
+
+  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ===== SPINNER ===== */
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ===== PROGRESS ===== */
+  .progress-bar-wrap {
+    background: var(--surface2);
+    border-radius: 999px;
+    height: 8px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 999px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.8);
+    animation: modalIn 0.25s ease;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.9) translateY(16px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-box h3 { font-size: 1.1rem; margin-bottom: 8px; }
+  .modal-box p { color: var(--text-dim); font-size: 13px; margin-bottom: 20px; }
+
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* ===== DRAG AND DROP ===== */
+  .drag-zone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-lg);
+    min-height: 100px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 13px;
+    transition: all 0.2s;
+    background: var(--surface2);
+  }
+
+  .drag-zone.over {
+    border-color: var(--accent);
+    background: rgba(0,229,160,0.05);
+    color: var(--accent);
+  }
+
+  .drag-item {
+    background: var(--accent2);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    cursor: grab;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    user-select: none;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+
+  .drag-item:active { cursor: grabbing; }
+
+  /* ===== HOVER MENU ===== */
+  .hover-menu { position: relative; display: inline-block; }
+
+  .hover-menu-trigger {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 9px 18px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 12px;
+    user-select: none;
+  }
+
+  .hover-menu-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    min-width: 160px;
+    z-index: 100;
+    margin-top: 4px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+  }
+
+  .hover-menu:hover .hover-menu-dropdown { display: block; }
+
+  .hover-menu-dropdown a {
+    display: block;
+    padding: 9px 16px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-family: var(--mono);
+    font-size: 12px;
+    transition: all 0.15s;
+  }
+
+  .hover-menu-dropdown a:hover { background: var(--surface2); color: var(--accent); }
+
+  /* ===== TOOLTIP ===== */
+  .tooltip-wrap { position: relative; display: inline-block; }
+
+  .tooltip-wrap .tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    background: #222;
+    color: var(--accent);
+    text-align: center;
+    border-radius: 6px;
+    padding: 6px 12px;
+    position: absolute;
+    z-index: 200;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-family: var(--mono);
+    font-size: 11px;
+    border: 1px solid var(--border);
+    transition: opacity 0.2s;
+  }
+
+  .tooltip-wrap:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  /* ===== SLIDER ===== */
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 999px;
+    outline: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 4px rgba(0,229,160,0.2);
+  }
+
+  /* ===== GRID ===== */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  @media (max-width: 640px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  /* ===== NESTED DOM ===== */
+  .nested-root { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .nested-root .nested-level { margin-left: 20px; margin-top: 10px; border-left: 2px solid var(--border); padding-left: 14px; }
+  .nested-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--surface2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 6px;
+  }
+  .nested-item { color: var(--text-dim); font-family: var(--mono); font-size: 12px; padding: 4px 0; }
+
+  /* ===== RESIZABLE ===== */
+  .resizable-box {
+    resize: both;
+    overflow: auto;
+    background: var(--surface2);
+    border: 1px dashed var(--accent2);
+    border-radius: var(--radius);
+    padding: 20px;
+    width: 280px;
+    min-width: 140px;
+    min-height: 80px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* ===== LOGIN PAGE ===== */
+  #s21-dashboard {
+    display: none;
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-top: 14px;
+  }
+
+  /* ===== DYNAMIC LIST ===== */
+  #s23-list {
+    list-style: none;
+    margin-top: 12px;
+  }
+
+  #s23-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+    margin-bottom: 6px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  #s23-list li button {
+    background: none;
+    border: none;
+    color: var(--error);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 2px 6px;
+  }
+
+  /* ===== IFRAME ===== */
+  iframe {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    width: 100%;
+    height: 200px;
+    background: var(--surface2);
+  }
+
+  /* ===== SHADOW DOM HOST ===== */
+  my-widget {
+    display: block;
+    margin-top: 8px;
+  }
+
+  /* ===== STATUS INDICATOR ===== */
+  .status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+
+  .dot-green { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .dot-red { background: var(--error); box-shadow: 0 0 6px var(--error); }
+  .dot-yellow { background: var(--warning); box-shadow: 0 0 6px var(--warning); }
+
+  /* ===== SEARCH INPUT ===== */
+  .search-input-wrap {
+    position: relative;
+    margin-bottom: 12px;
+  }
+
+  .search-input-wrap input {
+    padding-left: 36px;
+  }
+
+  .search-input-wrap .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  /* ===== PAGINATION ===== */
+  .pagination { display: flex; gap: 6px; margin-top: 12px; align-items: center; }
+
+  .page-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 12px;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .page-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+  .page-btn:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+
+  /* ===== CUSTOM DROPDOWN ===== */
+  .custom-dropdown { position: relative; }
+
+  .custom-dropdown-trigger {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    transition: border-color 0.2s;
+  }
+
+  .custom-dropdown-trigger:hover { border-color: var(--accent); }
+
+  .custom-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-top: 4px;
+    z-index: 50;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .custom-dropdown-menu.open { display: block; }
+
+  .custom-dropdown-option {
+    padding: 9px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .custom-dropdown-option:hover { background: var(--surface2); color: var(--accent); }
+
+  /* ===== HIDDEN ELEMENTS ===== */
+  .hidden-el { display: none; }
+
+  /* ===== UTILS ===== */
+  .mt-8 { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+  .mt-16 { margin-top: 16px; }
+  .gap-8 { gap: 8px; }
+  .text-muted { color: var(--text-muted); font-size: 12px; font-family: var(--mono); }
+  .text-success { color: var(--accent); }
+  .text-error { color: var(--error); }
+
+  /* ===== SCROLL SECTION ===== */
+  #s19-scroll-target {
+    background: linear-gradient(135deg, rgba(0,229,160,0.1), rgba(123,97,255,0.1));
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-top: 12px;
+    text-align: center;
+    font-family: var(--mono);
+    color: var(--accent);
+  }
+
+  /* ===== SECTION DIVIDER ===== */
+  .section-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-tag::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="logo">QA<span>::</span>Playground</div>
+  <button class="toc-toggle" onclick="document.getElementById('toc-panel').classList.toggle('open')">☰ Sections</button>
+</header>
+
+<!-- TABLE OF CONTENTS -->
+<div id="toc-panel">
+  <h3>Navigation</h3>
+  <a href="#s1">01 · Basic Form Elements</a>
+  <a href="#s2">02 · Button Interactions</a>
+  <a href="#s3">03 · Checkboxes & Radios</a>
+  <a href="#s4">04 · Dropdowns</a>
+  <a href="#s5">05 · Locator Practice</a>
+  <a href="#s6">06 · Dynamic Content</a>
+  <a href="#s7">07 · Waits & Sync</a>
+  <a href="#s8">08 · Table Automation</a>
+  <a href="#s9">09 · Alerts</a>
+  <a href="#s10">10 · Modals</a>
+  <a href="#s11">11 · iFrame</a>
+  <a href="#s12">12 · Shadow DOM</a>
+  <a href="#s13">13 · Drag & Drop</a>
+  <a href="#s14">14 · Hover Elements</a>
+  <a href="#s15">15 · Tooltip</a>
+  <a href="#s16">16 · File Upload</a>
+  <a href="#s17">17 · Download</a>
+  <a href="#s18">18 · Hidden Elements</a>
+  <a href="#s19">19 · Scroll Testing</a>
+  <a href="#s20">20 · Multiple Windows</a>
+  <a href="#s21">21 · Auth Simulation</a>
+  <a href="#s22">22 · Stale Element</a>
+  <a href="#s23">23 · Dynamic List</a>
+  <a href="#s24">24 · Network Delay</a>
+  <a href="#s25">25 · Random Fail</a>
+  <a href="#s26">26 · Keyboard Actions</a>
+  <a href="#s27">27 · Slider</a>
+  <a href="#s28">28 · Date Picker</a>
+  <a href="#s29">29 · Resizable</a>
+  <a href="#s30">30 · Complex DOM</a>
+</div>
+
+<div class="container">
+
+  <!-- ============================================================
+       SECTION 1: BASIC FORM ELEMENTS
+       Automation concepts: Basic locators, form interaction,
+       value extraction, sendKeys, clear, submit
+       ============================================================ -->
+  <section id="s1" class="section" data-testid="section-basic-form">
+    <div class="section-number">01</div>
+    <h2>Basic Form Elements</h2>
+    <p class="section-desc">// Practice: sendKeys, getValue, submit, clear, placeholder locators</p>
+
+    <form id="basic-form" name="basicForm" data-testid="basic-form" aria-label="Basic Practice Form" onsubmit="handleBasicFormSubmit(event)">
+      <div class="grid-2">
+        <div class="form-group">
+          <label for="txt-name">Full Name</label>
+          <!-- id, name, placeholder, data-testid locators -->
+          <input type="text" id="txt-name" name="fullName" placeholder="Enter your full name"
+            data-testid="input-name" aria-label="Full Name Input" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label for="txt-email">Email Address</label>
+          <input type="email" id="txt-email" name="email" placeholder="user@example.com"
+            data-testid="input-email" aria-label="Email Input" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label for="txt-password">Password</label>
+          <!-- password input: .getAttribute('type') == 'password' -->
+          <input type="password" id="txt-password" name="password" placeholder="Min 8 characters"
+            data-testid="input-password" aria-label="Password Input" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label for="txt-phone">Phone Number</label>
+          <input type="tel" id="txt-phone" name="phone" placeholder="+1 (555) 000-0000"
+            data-testid="input-phone" aria-label="Phone Input" class="form-input" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="txt-bio">About You</label>
+        <!-- textarea: multiline text, rows/cols, resize -->
+        <textarea id="txt-bio" name="bio" placeholder="Tell us about yourself..."
+          data-testid="input-bio" aria-label="Biography Textarea" rows="4"></textarea>
+      </div>
+      <div class="btn-row">
+        <button type="submit" id="btn-submit-form" class="btn btn-primary"
+          data-testid="btn-submit" aria-label="Submit Form Button">Submit</button>
+        <button type="reset" id="btn-reset-form" class="btn btn-secondary"
+          data-testid="btn-reset" aria-label="Reset Form Button">Reset</button>
+      </div>
+    </form>
+    <div id="s1-output" class="output" data-testid="form-output">// Submitted values will appear here</div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 2: BUTTON INTERACTIONS
+       Automation concepts: click(), dblclick(), contextmenu,
+       disabled state, dynamic enablement, text change after action
+       ============================================================ -->
+  <section id="s2" class="section" data-testid="section-buttons">
+    <div class="section-number">02</div>
+    <h2>Button Interactions</h2>
+    <p class="section-desc">// Practice: click, dblclick, right-click, disabled, text change, delayed enable</p>
+
+    <div class="btn-row">
+      <!-- Normal click -->
+      <button id="btn-normal" class="btn btn-primary" data-testid="btn-normal"
+        aria-label="Normal Click Button" onclick="setOutput('s2-output','✅ Normal click registered')">
+        Normal Click
+      </button>
+
+      <!-- Double click - dblclick event -->
+      <button id="btn-dblclick" class="btn btn-secondary" data-testid="btn-dblclick"
+        aria-label="Double Click Button" ondblclick="setOutput('s2-output','✅ Double click registered')">
+        Double Click Me
+      </button>
+
+      <!-- Right click - contextmenu event -->
+      <button id="btn-rightclick" class="btn btn-secondary" data-testid="btn-rightclick"
+        aria-label="Right Click Button"
+        oncontextmenu="event.preventDefault(); setOutput('s2-output','✅ Right click (contextmenu) registered')">
+        Right Click Me
+      </button>
+
+      <!-- Disabled button -->
+      <button id="btn-disabled" class="btn btn-danger" data-testid="btn-disabled"
+        aria-label="Disabled Button" disabled>
+        Disabled
+      </button>
+
+      <!-- Button enabled after delay - good for waitForEnabled practice -->
+      <button id="btn-enable-trigger" class="btn btn-warning" data-testid="btn-enable-trigger"
+        aria-label="Enable Delayed Button" onclick="enableDelayedBtn()">
+        Enable Delayed Btn (3s)
+      </button>
+
+      <button id="btn-delayed" class="btn btn-purple" data-testid="btn-delayed"
+        aria-label="Delayed Enable Button" disabled
+        onclick="setOutput('s2-output','✅ Delayed button clicked!')">
+        Wait For Me
+      </button>
+
+      <!-- Text changes after click -->
+      <button id="btn-text-change" class="btn btn-secondary" data-testid="btn-text-change"
+        aria-label="Text Change Button" onclick="changeButtonText()">
+        Click to Change Text
+      </button>
+    </div>
+
+    <div id="s2-output" class="output" data-testid="btn-output">// Button events appear here</div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 3: CHECKBOXES AND RADIO BUTTONS
+       Automation concepts: isSelected(), isChecked(), select all,
+       conditional visibility based on checkbox state
+       ============================================================ -->
+  <section id="s3" class="section" data-testid="section-checkboxes">
+    <div class="section-number">03</div>
+    <h2>Checkboxes &amp; Radio Buttons</h2>
+    <p class="section-desc">// Practice: isSelected, selectAll, radio group, conditional reveal</p>
+
+    <div class="grid-2">
+      <div>
+        <p class="text-muted" style="margin-bottom:10px;">— Checkboxes</p>
+        <div class="check-group">
+          <!-- Select All checkbox -->
+          <label class="check-item">
+            <input type="checkbox" id="chk-select-all" name="selectAll"
+              data-testid="chk-select-all" aria-label="Select All Checkbox"
+              onchange="toggleSelectAll(this)">
+            <span style="color:var(--accent);font-weight:700;">Select All</span>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="chk-selenium" name="framework" value="selenium"
+              data-testid="chk-selenium" aria-label="Selenium Checkbox" class="framework-chk">
+            Selenium
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="chk-playwright" name="framework" value="playwright"
+              data-testid="chk-playwright" aria-label="Playwright Checkbox" class="framework-chk"
+              checked>
+            Playwright
+          </label>
+          <label class="check-item">
+            <input type="checkbox" id="chk-cypress" name="framework" value="cypress"
+              data-testid="chk-cypress" aria-label="Cypress Checkbox" class="framework-chk">
+            Cypress
+          </label>
+          <!-- Reveals hidden text when checked -->
+          <label class="check-item">
+            <input type="checkbox" id="chk-reveal" name="reveal"
+              data-testid="chk-reveal" aria-label="Reveal Hidden Checkbox"
+              onchange="toggleReveal(this)">
+            Reveal Secret
+          </label>
+          <div id="reveal-text" class="hidden-el" data-testid="reveal-text"
+            style="color:var(--accent);font-family:var(--mono);font-size:12px;padding:8px;background:var(--surface2);border-radius:4px;margin-top:4px;">
+            🎉 You revealed the hidden element! Locator: #reveal-text
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p class="text-muted" style="margin-bottom:10px;">— Radio Buttons</p>
+        <div class="check-group">
+          <label class="check-item">
+            <input type="radio" id="radio-beginner" name="level" value="beginner"
+              data-testid="radio-beginner" aria-label="Beginner Level" onchange="showRadioOutput()">
+            Beginner
+          </label>
+          <label class="check-item">
+            <input type="radio" id="radio-intermediate" name="level" value="intermediate"
+              data-testid="radio-intermediate" aria-label="Intermediate Level"
+              checked onchange="showRadioOutput()">
+            Intermediate
+          </label>
+          <label class="check-item">
+            <input type="radio" id="radio-advanced" name="level" value="advanced"
+              data-testid="radio-advanced" aria-label="Advanced Level" onchange="showRadioOutput()">
+            Advanced
+          </label>
+          <label class="check-item">
+            <input type="radio" id="radio-expert" name="level" value="expert"
+              data-testid="radio-expert" aria-label="Expert Level" onchange="showRadioOutput()">
+            Expert
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div id="s3-output" class="output" data-testid="checkbox-output">// Intermediate selected by default</div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 4: DROPDOWNS
+       Automation concepts: selectByValue, selectByVisibleText,
+       custom div dropdowns, dynamic population
+       ============================================================ -->
+  <section id="s4" class="section" data-testid="section-dropdowns">
+    <div class="section-number">04</div>
+    <h2>Dropdowns</h2>
+    <p class="section-desc">// Practice: select(), selectByValue, multi-select, custom div dropdown, dynamic options</p>
+
+    <div class="grid-2">
+      <!-- Standard select -->
+      <div class="form-group">
+        <label for="sel-country">Standard Select — Country</label>
+        <select id="sel-country" name="country" data-testid="sel-country"
+          aria-label="Country Select Dropdown" onchange="setOutput('s4-output','Selected: '+this.value)">
+          <option value="">-- Select Country --</option>
+          <option value="us">United States</option>
+          <option value="uk">United Kingdom</option>
+          <option value="in">India</option>
+          <option value="au">Australia</option>
+          <option value="ca">Canada</option>
+          <option value="de">Germany</option>
+        </select>
+      </div>
+
+      <!-- Multi-select -->
+      <div class="form-group">
+        <label for="sel-skills">Multi-Select — Skills</label>
+        <select id="sel-skills" name="skills" multiple data-testid="sel-skills"
+          aria-label="Skills Multi Select" size="5"
+          onchange="showMultiSelect()"
+          style="height:auto;">
+          <option value="playwright">Playwright</option>
+          <option value="selenium">Selenium</option>
+          <option value="cypress">Cypress</option>
+          <option value="jest">Jest</option>
+          <option value="mocha">Mocha</option>
+        </select>
+        <p class="text-muted mt-8">Hold Ctrl/Cmd to select multiple</p>
+      </div>
+
+      <!-- Custom div dropdown -->
+      <div class="form-group">
+        <label>Custom Div Dropdown (non-select)</label>
+        <!-- Challenge: interact with non-native select elements -->
+        <div class="custom-dropdown" id="custom-dd" data-testid="custom-dropdown">
+          <div class="custom-dropdown-trigger" id="custom-dd-trigger"
+            aria-label="Custom Dropdown Trigger" aria-haspopup="listbox"
+            onclick="toggleCustomDropdown()">
+            <span id="custom-dd-value">-- Choose Framework --</span>
+            <span>▾</span>
+          </div>
+          <div class="custom-dropdown-menu" id="custom-dd-menu" role="listbox">
+            <div class="custom-dropdown-option" data-value="playwright" role="option"
+              data-testid="dd-option-playwright"
+              onclick="selectCustomOption('Playwright','playwright')">Playwright</div>
+            <div class="custom-dropdown-option" data-value="selenium" role="option"
+              data-testid="dd-option-selenium"
+              onclick="selectCustomOption('Selenium','selenium')">Selenium</div>
+            <div class="custom-dropdown-option" data-value="cypress" role="option"
+              data-testid="dd-option-cypress"
+              onclick="selectCustomOption('Cypress','cypress')">Cypress</div>
+            <div class="custom-dropdown-option" data-value="webdriverio" role="option"
+              data-testid="dd-option-webdriverio"
+              onclick="selectCustomOption('WebdriverIO','webdriverio')">WebdriverIO</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamically populated dropdown -->
+      <div class="form-group">
+        <label for="sel-dynamic">Dynamic Dropdown (populated via JS)</label>
+        <select id="sel-dynamic" name="dynamicOption" data-testid="sel-dynamic"
+          aria-label="Dynamic Dropdown" onchange="setOutput('s4-output','Dynamic selected: '+this.value)">
+          <option value="">-- Load options first --</option>
+        </select>
+        <button class="btn btn-secondary mt-8" id="btn-load-options"
+          data-testid="btn-load-options" onclick="loadDynamicOptions()">Load Options</button>
+      </div>
+    </div>
+
+    <div id="s4-output" class="output" data-testid="dropdown-output">// Dropdown selections appear here</div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 5: LOCATOR PRACTICE
+       Automation concepts: All major locator strategies,
+       deeply nested DOM, parent/child/sibling traversal
+       ============================================================ -->
+  <section id="s5" class="section" data-testid="section-locators">
+    <div class="section-number">05</div>
+    <h2>Locator Practice</h2>
+    <p class="section-desc">// Practice: id, class, name, data-testid, aria-label, CSS selectors, XPath, nested DOM</p>
+
+    <!-- id locator: #loc-by-id -->
+    <p id="loc-by-id" class="text-muted mt-8">Located by ID: #loc-by-id</p>
+
+    <!-- class locator: .loc-by-class -->
+    <p class="loc-by-class" style="color:var(--accent2);font-family:var(--mono);font-size:12px;">Located by Class: .loc-by-class</p>
+
+    <!-- name locator -->
+    <input type="text" name="locator-name-field" id="loc-by-name" placeholder="Located by name='locator-name-field'"
+      data-testid="loc-name-input" style="margin:8px 0;" />
+
+    <!-- data-testid locator -->
+    <button class="btn btn-secondary mt-8" data-testid="loc-by-testid" id="loc-testid-btn"
+      aria-label="Test ID Located Button">Located by data-testid="loc-by-testid"</button>
+
+    <!-- aria-label locator -->
+    <button class="btn btn-secondary mt-8" aria-label="Aria Label Located Button"
+      id="loc-aria-btn" data-testid="loc-aria-btn">Located by aria-label</button>
+
+    <!-- text content locator: text="Exact Text Match" -->
+    <p id="loc-exact-text" style="color:var(--warning);font-family:var(--mono);font-size:12px;margin-top:8px;">
+      Exact Text Match Target
+    </p>
+
+    <!-- partial text: contains text -->
+    <p id="loc-partial-text" style="color:var(--accent2);font-family:var(--mono);font-size:12px;">
+      This paragraph contains partial text for matching
+    </p>
+
+    <!-- CSS selector: div > p.child-el -->
+    <div class="parent-el" id="css-parent" style="margin-top:12px;padding:12px;background:var(--surface2);border-radius:6px;">
+      <p class="child-el" id="css-child-1" data-testid="css-child-1"
+        style="font-family:var(--mono);font-size:12px;color:var(--text-dim);">
+        Child 1 — CSS: .parent-el > .child-el:first-child
+      </p>
+      <p class="child-el" id="css-child-2" data-testid="css-child-2"
+        style="font-family:var(--mono);font-size:12px;color:var(--text-dim);margin-top:4px;">
+        Child 2 — CSS: .parent-el > .child-el:last-child
+      </p>
+      <!-- Sibling: #css-child-1 + #css-child-2 -->
+    </div>
+
+    <!-- Deeply nested DOM for XPath -->
+    <p class="text-muted mt-12" style="margin-bottom:8px;">XPath Practice — Deeply Nested DOM:</p>
+    <div class="nested-root" id="xpath-root" data-testid="xpath-root">
+      <span class="nested-label">Level 0 — div#xpath-root</span>
+      <div class="nested-level" id="xpath-l1">
+        <span class="nested-label">Level 1 — div#xpath-l1</span>
+        <p class="nested-item" id="xpath-l1-text">XPath: //div[@id='xpath-l1']/p</p>
+        <div class="nested-level" id="xpath-l2">
+          <span class="nested-label">Level 2 — div#xpath-l2</span>
+          <p class="nested-item" id="xpath-l2-text">XPath: //div[@id='xpath-l2']/p</p>
+          <div class="nested-level" id="xpath-l3">
+            <span class="nested-label">Level 3 — div#xpath-l3</span>
+            <span id="xpath-deep-target" data-testid="xpath-deep-target" class="nested-item"
+              aria-label="Deep Nested Target">
+              🎯 Deep target — XPath: //span[@id='xpath-deep-target']
+            </span>
+            <div class="nested-level" id="xpath-l4">
+              <span class="nested-label">Level 4 — deepest</span>
+              <button id="xpath-deep-btn" class="btn btn-secondary" data-testid="xpath-deep-btn"
+                onclick="setOutput('s5-output','✅ Deep nested button clicked!')"
+                style="margin-top:6px;">
+                Deep Button (Level 4)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="s5-output" class="output" data-testid="locator-output">// Locator interactions appear here</div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 6: DYNAMIC CONTENT
+       Automation concepts: waitForVisible, waitForText,
+       element appears/disappears, counter updates
+       ============================================================ -->
+  <section id="s6" class="section" data-testid="section-dynamic">
+    <div class="section-number">06</div>
+    <h2>Dynamic Content</h2>
+    <p class="section-desc">// Practice: waitForVisible, element appear/disappear, text change, counter</p>
+
+    <div class="btn-row">
+      <!-- Element appears after 2 seconds -->
+      <button class="btn btn-primary" id="btn-appear" data-testid="btn-appear"
+        onclick="showDelayedElement()">Show Element (2s delay)</button>
+
+      <!-- Element disappears -->
+      <button class="btn btn-secondary" id="btn-disappear" data-testid="btn-disappear"
+        onclick="hideElement()">Hide Dynamic Element</button>
+
+      <!-- Text change -->
+      <button class="btn btn-secondary" id="btn-change-text" data-testid="btn-change-text"
+        onclick="changeDynText()">Change Text Dynamically</button>
+
+      <!-- Counter update -->
+      <button class="btn btn-purple" id="btn-counter" data-testid="btn-counter"
+        onclick="updateCounter()">Increment Counter</button>
+
+      <!-- Load content -->
+      <button class="btn btn-warning" id="btn-load-content" data-testid="btn-load-content"
+        onclick="loadDynContent()">Load Content</button>
+    </div>
+
+    <div id="s6-dynamic-el" data-testid="dynamic-visible-el"
+      style="display:none;margin-top:14px;padding:12px;background:rgba(0,229,160,0.08);border:1px solid var(--accent);border-radius:var(--radius);font-family:var(--mono);font-size:12px;color:var(--accent);">
+      ✅ I appeared after a delay! [data-testid="dynamic-visible-el"]
+    </div>
+
+    <div class="mt-12">
+      <span id="s6-counter-label" class="text-muted">Counter value: </span>
+      <span id="s6-counter" data-testid="counter-value"
+        style="color:var(--accent);font-family:var(--mono);font-weight:700;font-size:1.2rem;">0</span>
+    </div>
+
+    <div id="s6-dyn-text" data-testid="dynamic-text"
+      style="margin-top:10px;font-family:var(--mono);font-size:13px;color:var(--text-dim);">
+      Original Text — click "Change Text Dynamically" to update
+    </div>
+
+    <div id="s6-content-area" data-testid="loaded-content" class="mt-12"></div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 7: WAITS AND SYNCHRONIZATION
+       Automation concepts: implicit/explicit waits, spinner,
+       waitForElement, progress bar, AJAX simulation
+       ============================================================ -->
+  <section id="s7" class="section" data-testid="section-waits">
+    <div class="section-number">07</div>
+    <h2>Waits &amp; Synchronization</h2>
+    <p class="section-desc">// Practice: spinner, delayed appearance, progress, AJAX simulation, waitFor*</p>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-spinner" data-testid="btn-spinner"
+        onclick="showSpinner()">Start Spinner (3s)</button>
+
+      <button class="btn btn-secondary" id="btn-delayed-text" data-testid="btn-delayed-text"
+        onclick="showDelayedText()">Delayed Text (2s)</button>
+
+      <button class="btn btn-purple" id="btn-progress" data-testid="btn-progress"
+        onclick="startProgress()">Start Progress Bar</button>
+
+      <button class="btn btn-warning" id="btn-ajax" data-testid="btn-ajax"
+        onclick="simulateAjax()">Simulate AJAX (2.5s)</button>
+    </div>
+
+    <div id="s7-spinner-wrap" style="display:none;margin-top:14px;align-items:center;gap:12px;">
+      <div class="spinner" data-testid="loading-spinner"></div>
+      <span style="font-family:var(--mono);font-size:12px;color:var(--text-muted);">Loading data...</span>
+    </div>
+
+    <div id="s7-delayed-text" data-testid="delayed-text-el"
+      style="display:none;margin-top:12px;font-family:var(--mono);font-size:13px;color:var(--accent);">
+      ✅ Text appeared after explicit wait!
+    </div>
+
+    <div style="margin-top:14px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+        <span class="text-muted">Progress</span>
+        <span id="s7-progress-pct" class="text-muted" data-testid="progress-percent">0%</span>
+      </div>
+      <div class="progress-bar-wrap" data-testid="progress-bar-container">
+        <div class="progress-bar-fill" id="s7-progress-fill" data-testid="progress-bar-fill"></div>
+      </div>
+    </div>
+
+    <div id="s7-ajax-result" data-testid="ajax-result" class="output mt-12" style="display:none;">
+      // AJAX result appears here
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 8: TABLE AUTOMATION
+       Automation concepts: reading cells, sorting, filtering,
+       pagination, row/column traversal
+       ============================================================ -->
+  <section id="s8" class="section" data-testid="section-table">
+    <div class="section-number">08</div>
+    <h2>Table Automation</h2>
+    <p class="section-desc">// Practice: cell reading, sorting, filter/search, pagination, row counting</p>
+
+    <div class="search-input-wrap" style="max-width:320px;">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="table-search" placeholder="Search employees..."
+        data-testid="table-search" aria-label="Table Search Input"
+        oninput="filterTable()" />
+    </div>
+
+    <div style="overflow-x:auto;">
+      <table class="data-table" id="employee-table" data-testid="employee-table"
+        aria-label="Employee Data Table">
+        <thead>
+          <tr id="table-header-row">
+            <th data-testid="col-name" onclick="sortTable(0)" aria-label="Sort by Name">
+              Name <span id="sort-0">↕</span>
+            </th>
+            <th data-testid="col-dept" onclick="sortTable(1)" aria-label="Sort by Department">
+              Department <span id="sort-1">↕</span>
+            </th>
+            <th data-testid="col-role" onclick="sortTable(2)" aria-label="Sort by Role">
+              Role <span id="sort-2">↕</span>
+            </th>
+            <th data-testid="col-salary" onclick="sortTable(3)" aria-label="Sort by Salary">
+              Salary <span id="sort-3">↕</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody id="table-body" data-testid="table-body">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" id="table-pagination" data-testid="table-pagination">
+      <!-- Populated by JS -->
+    </div>
+
+    <div id="s8-row-count" class="text-muted mt-8" data-testid="row-count">Showing 0 rows</div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 9: ALERTS
+       Automation concepts: alert(), confirm(), prompt(),
+       accept/dismiss, getText from alert
+       ============================================================ -->
+  <section id="s9" class="section" data-testid="section-alerts">
+    <div class="section-number">09</div>
+    <h2>Alerts</h2>
+    <p class="section-desc">// Practice: alert(), confirm(), prompt(), accept, dismiss, dialog text</p>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-simple-alert" data-testid="btn-simple-alert"
+        aria-label="Simple Alert Button"
+        onclick="triggerSimpleAlert()">Simple Alert</button>
+
+      <button class="btn btn-warning" id="btn-confirm-alert" data-testid="btn-confirm-alert"
+        aria-label="Confirm Alert Button"
+        onclick="triggerConfirmAlert()">Confirm Alert</button>
+
+      <button class="btn btn-purple" id="btn-prompt-alert" data-testid="btn-prompt-alert"
+        aria-label="Prompt Alert Button"
+        onclick="triggerPromptAlert()">Prompt Alert</button>
+    </div>
+
+    <div id="s9-output" class="output" data-testid="alert-output">// Alert results appear here</div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 10: MODALS
+       Automation concepts: modal open/close, overlay click,
+       focus trap, element inside modal
+       ============================================================ -->
+  <section id="s10" class="section" data-testid="section-modal">
+    <div class="section-number">10</div>
+    <h2>Modals</h2>
+    <p class="section-desc">// Practice: modal open/close, overlay interaction, form inside modal</p>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-open-modal" data-testid="btn-open-modal"
+        aria-label="Open Modal Button" onclick="openModal()">Open Modal</button>
+    </div>
+
+    <div id="s10-output" class="output mt-12" data-testid="modal-output">// Modal actions appear here</div>
+  </section>
+
+  <!-- MODAL ELEMENT -->
+  <div class="modal-overlay" id="main-modal" data-testid="modal-overlay"
+    aria-modal="true" role="dialog" aria-label="Practice Modal"
+    onclick="handleOverlayClick(event)">
+    <div class="modal-box" id="modal-box" data-testid="modal-box">
+      <h3>Practice Modal</h3>
+      <p>This modal is great for practicing focus management, overlay click, and element interaction inside modals.</p>
+      <div class="form-group">
+        <label for="modal-input">Input Inside Modal</label>
+        <input type="text" id="modal-input" data-testid="modal-input"
+          placeholder="Type inside modal..." aria-label="Modal Input Field" />
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-modal-cancel" data-testid="btn-modal-cancel"
+          aria-label="Cancel Modal" onclick="closeModal('cancelled')">Cancel</button>
+        <button class="btn btn-primary" id="btn-modal-confirm" data-testid="btn-modal-confirm"
+          aria-label="Confirm Modal" onclick="closeModal('confirmed')">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SECTION 11: IFRAME
+       Automation concepts: frame switching, interacting
+       with elements inside iframe context
+       ============================================================ -->
+  <section id="s11" class="section" data-testid="section-iframe">
+    <div class="section-number">11</div>
+    <h2>iFrame Interaction</h2>
+    <p class="section-desc">// Practice: switchToFrame(), frame context, back to main</p>
+
+    <!-- Inline iframe using srcdoc -->
+    <iframe id="practice-iframe" name="practiceFrame" data-testid="practice-iframe"
+      aria-label="Practice iFrame" title="Practice Frame"
+      srcdoc="
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <style>
+          body { font-family: monospace; background:#13161d; color:#e2e8f0; padding:16px; margin:0; }
+          input { background:#1c2030; border:1px solid #2a2f3d; color:#e2e8f0; padding:8px 12px; border-radius:6px; width:100%; box-sizing:border-box; margin-bottom:10px; }
+          button { background:#00e5a0; color:#000; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:700; }
+          #iframe-output { color:#00e5a0; font-size:12px; margin-top:8px; }
+          label { font-size:11px; color:#64748b; display:block; margin-bottom:4px; }
+        </style>
+        </head>
+        <body>
+          <label for='iframe-input'>iFrame Input Field</label>
+          <input type='text' id='iframe-input' name='iframeField' data-testid='iframe-input' placeholder='Type inside iframe...' />
+          <button id='iframe-btn' data-testid='iframe-btn' onclick='document.getElementById(\"iframe-output\").textContent=\"✅ iFrame button clicked! Value: \" + document.getElementById(\"iframe-input\").value'>
+            Click in iFrame
+          </button>
+          <div id='iframe-output'>// iFrame elements ready</div>
+        </body>
+        </html>
+      ">
+    </iframe>
+  </section>
+
+  <!-- ============================================================
+       SECTION 12: SHADOW DOM
+       Automation concepts: shadowRoot, piercing shadow DOM,
+       querySelector on shadow root, custom elements
+       ============================================================ -->
+  <section id="s12" class="section" data-testid="section-shadow-dom">
+    <div class="section-number">12</div>
+    <h2>Shadow DOM</h2>
+    <p class="section-desc">// Practice: shadowRoot, pierce >>>, element().shadowRoot.querySelector()</p>
+
+    <!-- Custom Web Component with Shadow DOM -->
+    <my-widget id="shadow-host" data-testid="shadow-host"></my-widget>
+
+    <div class="output mt-12" data-testid="shadow-output" id="s12-output">
+      // Shadow DOM: access via element.shadowRoot.querySelector('#shadow-input')
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 13: DRAG AND DROP
+       Automation concepts: dragstart/drop events,
+       HTML5 DataTransfer, mouse-based drag
+       ============================================================ -->
+  <section id="s13" class="section" data-testid="section-drag-drop">
+    <div class="section-number">13</div>
+    <h2>Drag &amp; Drop</h2>
+    <p class="section-desc">// Practice: dragAndDrop(), HTML5 DataTransfer, mousedown/mousemove/mouseup</p>
+
+    <div class="grid-2">
+      <div>
+        <p class="text-muted" style="margin-bottom:10px;">— Draggable Item</p>
+        <div id="drag-item-1" class="drag-item" draggable="true"
+          data-testid="draggable-item" aria-label="Draggable Item"
+          ondragstart="dragStart(event)">
+          🟣 Drag Me!
+        </div>
+        <div id="drag-item-2" class="drag-item" draggable="true"
+          data-testid="draggable-item-2" aria-label="Draggable Item 2"
+          style="background:var(--accent3);"
+          ondragstart="dragStart(event)">
+          🔴 Drag Me Too!
+        </div>
+      </div>
+
+      <div>
+        <p class="text-muted" style="margin-bottom:10px;">— Drop Zone</p>
+        <div class="drag-zone" id="drop-zone" data-testid="drop-zone"
+          aria-label="Drop Zone"
+          ondragover="event.preventDefault(); this.classList.add('over')"
+          ondragleave="this.classList.remove('over')"
+          ondrop="handleDrop(event)">
+          Drop Here
+        </div>
+      </div>
+    </div>
+
+    <div id="s13-output" class="output mt-12" data-testid="drag-output">// Drag result appears here</div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 14: HOVER ELEMENTS
+       Automation concepts: hover(), mouse_over,
+       CSS :hover vs JS mouseover, submenu interaction
+       ============================================================ -->
+  <section id="s14" class="section" data-testid="section-hover">
+    <div class="section-number">14</div>
+    <h2>Hover Elements</h2>
+    <p class="section-desc">// Practice: hover(), mouseover, nested hover menus, CSS-triggered submenus</p>
+
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;margin-top:4px;">
+      <!-- CSS hover menu -->
+      <div class="hover-menu" id="hover-menu-1" data-testid="hover-menu">
+        <div class="hover-menu-trigger" aria-label="Navigation Menu">Products ▾</div>
+        <div class="hover-menu-dropdown" data-testid="hover-dropdown">
+          <a href="#" data-testid="hover-item-1" onclick="event.preventDefault();setOutput('s14-output','Clicked: Testing Tools')">Testing Tools</a>
+          <a href="#" data-testid="hover-item-2" onclick="event.preventDefault();setOutput('s14-output','Clicked: CI/CD Suite')">CI/CD Suite</a>
+          <a href="#" data-testid="hover-item-3" onclick="event.preventDefault();setOutput('s14-output','Clicked: Analytics')">Analytics</a>
+          <a href="#" data-testid="hover-item-4" onclick="event.preventDefault();setOutput('s14-output','Clicked: Integrations')">Integrations</a>
+        </div>
+      </div>
+
+      <div class="hover-menu" id="hover-menu-2" data-testid="hover-menu-2">
+        <div class="hover-menu-trigger" aria-label="Solutions Menu">Solutions ▾</div>
+        <div class="hover-menu-dropdown" data-testid="hover-dropdown-2">
+          <a href="#" onclick="event.preventDefault();setOutput('s14-output','Clicked: Enterprise')">Enterprise</a>
+          <a href="#" onclick="event.preventDefault();setOutput('s14-output','Clicked: Startup')">Startup</a>
+          <a href="#" onclick="event.preventDefault();setOutput('s14-output','Clicked: Open Source')">Open Source</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="s14-output" class="output mt-12" data-testid="hover-output">// Hover menu interactions appear here</div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 15: TOOLTIP
+       Automation concepts: hover to reveal tooltip,
+       aria-label vs title tooltips, custom tooltips
+       ============================================================ -->
+  <section id="s15" class="section" data-testid="section-tooltip">
+    <div class="section-number">15</div>
+    <h2>Tooltip</h2>
+    <p class="section-desc">// Practice: hover for tooltip, getAttribute('title'), custom tooltip visibility</p>
+
+    <div class="btn-row" style="align-items:center;">
+      <!-- CSS tooltip -->
+      <div class="tooltip-wrap" data-testid="tooltip-container">
+        <button class="btn btn-primary" id="tooltip-btn-1" data-testid="tooltip-btn"
+          aria-label="Tooltip Button 1">Hover for CSS Tooltip</button>
+        <span class="tooltip-text" data-testid="tooltip-text" role="tooltip">
+          ✅ CSS-only tooltip! No JS needed.
+        </span>
+      </div>
+
+      <!-- title attribute tooltip (browser native) -->
+      <button class="btn btn-secondary" id="tooltip-btn-2" data-testid="tooltip-native-btn"
+        title="Native browser tooltip via title attribute"
+        aria-label="Native Tooltip Button">
+        Native Title Tooltip
+      </button>
+
+      <!-- aria-label tooltip -->
+      <button class="btn btn-purple" id="tooltip-btn-3" data-testid="tooltip-aria-btn"
+        aria-label="This aria-label acts as tooltip context"
+        aria-describedby="tooltip-desc-3">
+        Aria Tooltip
+      </button>
+      <span id="tooltip-desc-3" role="tooltip" style="display:none;">Aria described tooltip</span>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 16: FILE UPLOAD
+       Automation concepts: setInputFiles(), input[type=file],
+       file name verification, multi-file upload
+       ============================================================ -->
+  <section id="s16" class="section" data-testid="section-file-upload">
+    <div class="section-number">16</div>
+    <h2>File Upload</h2>
+    <p class="section-desc">// Practice: setInputFiles(), input[type=file], file name display, multiple files</p>
+
+    <div class="form-group">
+      <label for="file-single">Single File Upload</label>
+      <input type="file" id="file-single" name="fileSingle"
+        data-testid="file-upload-single" aria-label="Single File Upload"
+        onchange="displayFileName(this, 's16-output-single')" />
+    </div>
+
+    <div class="form-group">
+      <label for="file-multiple">Multiple File Upload</label>
+      <input type="file" id="file-multiple" name="fileMultiple" multiple
+        data-testid="file-upload-multiple" aria-label="Multiple File Upload"
+        onchange="displayFileName(this, 's16-output-multi')" />
+    </div>
+
+    <div id="s16-output-single" class="output" data-testid="file-name-display">// File name appears here</div>
+    <div id="s16-output-multi" class="output mt-8" data-testid="multi-file-names">// Multiple file names appear here</div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 17: DOWNLOAD
+       Automation concepts: file download triggering,
+       checking download events, blob URL downloads
+       ============================================================ -->
+  <section id="s17" class="section" data-testid="section-download">
+    <div class="section-number">17</div>
+    <h2>Download</h2>
+    <p class="section-desc">// Practice: download trigger, waitForDownload, blob URL, anchor[download]</p>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-download-txt" data-testid="btn-download-txt"
+        aria-label="Download Text File Button" onclick="downloadTextFile()">
+        Download .txt File
+      </button>
+
+      <button class="btn btn-secondary" id="btn-download-csv" data-testid="btn-download-csv"
+        aria-label="Download CSV File Button" onclick="downloadCSVFile()">
+        Download .csv File
+      </button>
+
+      <!-- Direct anchor download -->
+      <a id="download-anchor" class="btn btn-purple" data-testid="download-anchor"
+        aria-label="Direct Download Link"
+        href="data:text/plain;charset=utf-8,Hello%20Automation%20Engineer!" 
+        download="sample.txt">
+        Download via Anchor
+      </a>
+    </div>
+
+    <div id="s17-output" class="output mt-12" data-testid="download-output">// Download status appears here</div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 18: HIDDEN ELEMENTS
+       Automation concepts: display:none, visibility:hidden,
+       opacity:0, isVisible, waitForVisible
+       ============================================================ -->
+  <section id="s18" class="section" data-testid="section-hidden">
+    <div class="section-number">18</div>
+    <h2>Hidden Elements</h2>
+    <p class="section-desc">// Practice: isVisible, display:none, visibility:hidden, opacity, reveal</p>
+
+    <!-- display:none hidden -->
+    <button id="btn-display-none" name="hiddenBtn" data-testid="btn-hidden-display-none"
+      aria-label="Hidden Display None Button" class="btn btn-secondary"
+      style="display:none;">
+      I'm hidden (display:none)
+    </button>
+
+    <!-- visibility:hidden -->
+    <button id="btn-visibility-hidden" data-testid="btn-hidden-visibility"
+      aria-label="Visibility Hidden Button" class="btn btn-secondary"
+      style="visibility:hidden;">
+      I'm hidden (visibility:hidden)
+    </button>
+
+    <!-- opacity:0 -->
+    <button id="btn-opacity-hidden" data-testid="btn-hidden-opacity"
+      aria-label="Opacity Hidden Button" class="btn btn-secondary"
+      style="opacity:0;">
+      I'm hidden (opacity:0)
+    </button>
+
+    <div class="btn-row" style="margin-top:0;">
+      <button class="btn btn-warning" id="btn-reveal-hidden" data-testid="btn-reveal-hidden"
+        aria-label="Reveal Hidden Element Button" onclick="revealHidden()">
+        Reveal Hidden Elements
+      </button>
+    </div>
+
+    <div id="s18-hidden-target" data-testid="hidden-target" class="hidden-el"
+      style="margin-top:12px;padding:14px;background:rgba(255,107,107,0.1);border:1px solid var(--error);border-radius:var(--radius);font-family:var(--mono);font-size:12px;color:var(--error);">
+      🔴 I was hidden! Found using: document.getElementById('s18-hidden-target')
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 19: SCROLL TESTING
+       Automation concepts: scrollTo, scrollIntoView,
+       scroll to element, check element in viewport
+       ============================================================ -->
+  <section id="s19" class="section" data-testid="section-scroll">
+    <div class="section-number">19</div>
+    <h2>Scroll Testing</h2>
+    <p class="section-desc">// Practice: scrollTo, scrollIntoView, element in viewport, scroll position</p>
+
+    <!-- Tall spacer to require scrolling within section -->
+    <div style="height:300px;background:repeating-linear-gradient(0deg,var(--surface2),var(--surface2) 1px,transparent 1px,transparent 40px);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-family:var(--mono);font-size:12px;border-radius:var(--radius);">
+      Scroll down to find the target element →
+    </div>
+
+    <div id="s19-scroll-target" data-testid="scroll-target-el"
+      aria-label="Scroll Target Element">
+      🎯 Scroll Target Found! Use scrollIntoView() or scroll coordinates to reach here.
+    </div>
+
+    <button class="btn btn-primary mt-12" id="btn-scroll-to" data-testid="btn-scroll-to"
+      aria-label="Scroll To Element Button"
+      onclick="document.getElementById('s19-scroll-target').scrollIntoView({behavior:'smooth'})">
+      Scroll to Target
+    </button>
+  </section>
+
+  <!-- ============================================================
+       SECTION 20: MULTIPLE WINDOWS
+       Automation concepts: new tab/window, getWindowHandles,
+       switchToWindow, close and return
+       ============================================================ -->
+  <section id="s20" class="section" data-testid="section-windows">
+    <div class="section-number">20</div>
+    <h2>Multiple Windows</h2>
+    <p class="section-desc">// Practice: window.open, getWindowHandles, switchToWindow, close tab</p>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-new-tab" data-testid="btn-new-tab"
+        aria-label="Open New Tab Button" onclick="openNewTab()">
+        Open New Tab
+      </button>
+
+      <button class="btn btn-secondary" id="btn-new-window" data-testid="btn-new-window"
+        aria-label="Open New Window Button"
+        onclick="window.open('about:blank','_blank','width=600,height=400')">
+        Open New Window
+      </button>
+
+      <!-- target=_blank link -->
+      <a href="https://playwright.dev" target="_blank" rel="noopener"
+        class="btn btn-purple" id="link-new-tab" data-testid="link-new-tab"
+        aria-label="External Link New Tab">
+        External Link (new tab)
+      </a>
+    </div>
+
+    <div id="s20-output" class="output mt-12" data-testid="window-output">// Window actions appear here</div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 21: AUTHENTICATION SIMULATION
+       Automation concepts: login flow, session state,
+       form submission, success/failure state
+       ============================================================ -->
+  <section id="s21" class="section" data-testid="section-auth">
+    <div class="section-number">21</div>
+    <h2>Authentication Simulation</h2>
+    <p class="section-desc">// Practice: login flow, credentials, session, success state, error handling</p>
+
+    <div id="s21-login-form" data-testid="login-form">
+      <div class="form-group" style="max-width:360px;">
+        <label for="auth-username">Username</label>
+        <!-- Test credentials: admin / password123 -->
+        <input type="text" id="auth-username" name="username" placeholder="admin"
+          data-testid="auth-username" aria-label="Login Username" />
+      </div>
+      <div class="form-group" style="max-width:360px;">
+        <label for="auth-password">Password</label>
+        <input type="password" id="auth-password" name="password" placeholder="password123"
+          data-testid="auth-password" aria-label="Login Password" />
+      </div>
+      <p class="text-muted" style="margin-bottom:12px;">Credentials: <span style="color:var(--accent);">admin / password123</span></p>
+      <button class="btn btn-primary" id="btn-login" data-testid="btn-login"
+        aria-label="Login Submit Button" onclick="handleLogin()">Login</button>
+      <div id="s21-error" data-testid="login-error"
+        style="display:none;color:var(--error);font-family:var(--mono);font-size:12px;margin-top:10px;">
+        ❌ Invalid credentials
+      </div>
+    </div>
+
+    <div id="s21-dashboard" data-testid="user-dashboard">
+      <p style="color:var(--accent);font-family:var(--mono);font-size:13px;">
+        ✅ Welcome, <span id="s21-user-name" data-testid="logged-in-username"></span>!
+        You are logged in.
+      </p>
+      <button class="btn btn-secondary mt-8" id="btn-logout" data-testid="btn-logout"
+        aria-label="Logout Button" onclick="handleLogout()">Logout</button>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 22: STALE ELEMENT SIMULATION
+       Automation concepts: StaleElementReferenceException,
+       DOM replacement, re-finding elements
+       ============================================================ -->
+  <section id="s22" class="section" data-testid="section-stale">
+    <div class="section-number">22</div>
+    <h2>Stale Element Simulation</h2>
+    <p class="section-desc">// Practice: StaleElementReferenceException, DOM replacement, element re-query</p>
+
+    <p class="text-muted" style="margin-bottom:12px;">Click the button to replace the target element in the DOM — simulates stale element scenarios.</p>
+
+    <div id="s22-target-container" data-testid="stale-container">
+      <div id="stale-el" class="btn btn-secondary" data-testid="stale-target" style="display:inline-block;cursor:default;">
+        Original Element — ID: stale-el
+      </div>
+    </div>
+
+    <div class="btn-row mt-12">
+      <button class="btn btn-warning" id="btn-replace-el" data-testid="btn-replace-el"
+        aria-label="Replace DOM Element" onclick="replaceDomElement()">
+        Replace DOM Element
+      </button>
+      <button class="btn btn-secondary" id="btn-reset-stale" data-testid="btn-reset-stale"
+        onclick="resetStaleEl()">Reset</button>
+    </div>
+
+    <div id="s22-output" class="output mt-12" data-testid="stale-output">// DOM replacement log</div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 23: DYNAMIC LIST
+       Automation concepts: dynamic DOM mutation,
+       list item count, add/remove, MutationObserver
+       ============================================================ -->
+  <section id="s23" class="section" data-testid="section-list">
+    <div class="section-number">23</div>
+    <h2>Dynamic List</h2>
+    <p class="section-desc">// Practice: add/remove items, list item count, dynamic DOM, waitForSelector</p>
+
+    <div class="btn-row">
+      <input type="text" id="s23-input" placeholder="Enter item name..."
+        data-testid="list-item-input" aria-label="New List Item Input"
+        style="max-width:220px;" onkeyup="if(event.key==='Enter')addListItem()" />
+      <button class="btn btn-primary" id="btn-add-item" data-testid="btn-add-item"
+        aria-label="Add Item Button" onclick="addListItem()">Add Item</button>
+      <button class="btn btn-danger" id="btn-clear-list" data-testid="btn-clear-list"
+        onclick="clearList()">Clear All</button>
+    </div>
+
+    <ul id="s23-list" data-testid="dynamic-list" aria-label="Dynamic Item List"></ul>
+    <div id="s23-count" class="text-muted mt-8" data-testid="list-count">Items: 0</div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 24: NETWORK DELAY SIMULATION
+       Automation concepts: async operations, loading states,
+       waitForResponse, setTimeout as AJAX mock
+       ============================================================ -->
+  <section id="s24" class="section" data-testid="section-network">
+    <div class="section-number">24</div>
+    <h2>Network Delay Simulation</h2>
+    <p class="section-desc">// Practice: loading state, async results, API mock, response timing</p>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-api-call-fast" data-testid="btn-api-fast"
+        aria-label="Fast API Call" onclick="simulateApiCall(800,'Fast (0.8s)')">Fast Call (0.8s)</button>
+
+      <button class="btn btn-warning" id="btn-api-call-medium" data-testid="btn-api-medium"
+        aria-label="Medium API Call" onclick="simulateApiCall(2500,'Medium (2.5s)')">Medium (2.5s)</button>
+
+      <button class="btn btn-danger" id="btn-api-call-slow" data-testid="btn-api-slow"
+        aria-label="Slow API Call" onclick="simulateApiCall(5000,'Slow (5s)')">Slow (5s)</button>
+    </div>
+
+    <div id="s24-loading" data-testid="api-loading-state"
+      style="display:none;align-items:center;gap:10px;margin-top:14px;">
+      <div class="spinner" style="width:20px;height:20px;border-width:2px;"></div>
+      <span id="s24-loading-msg" style="font-family:var(--mono);font-size:12px;color:var(--text-muted);"></span>
+    </div>
+
+    <div id="s24-output" class="output mt-12" data-testid="api-response">// API response appears here</div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 25: RANDOM FAIL ELEMENTS
+       Automation concepts: flaky tests, retry logic,
+       intermittent failures, test stability
+       ============================================================ -->
+  <section id="s25" class="section" data-testid="section-flaky">
+    <div class="section-number">25</div>
+    <h2>Random Fail Elements (Flaky Test Simulator)</h2>
+    <p class="section-desc">// Practice: retry logic, flaky detection, random success/fail, test resilience</p>
+
+    <p class="text-muted" style="margin-bottom:12px;">These buttons randomly succeed or fail — practice retry strategies.</p>
+
+    <div class="btn-row">
+      <button class="btn btn-warning" id="btn-flaky-50" data-testid="btn-flaky-50"
+        aria-label="50% Flaky Button" onclick="flakyAction(0.5,'btn-flaky-50')">
+        50% Flaky
+      </button>
+
+      <button class="btn btn-warning" id="btn-flaky-30" data-testid="btn-flaky-30"
+        aria-label="30% Success Button" onclick="flakyAction(0.3,'btn-flaky-30')">
+        30% Success
+      </button>
+
+      <button class="btn btn-warning" id="btn-flaky-80" data-testid="btn-flaky-80"
+        aria-label="80% Success Button" onclick="flakyAction(0.8,'btn-flaky-80')">
+        80% Success
+      </button>
+
+      <!-- Sometimes disappears -->
+      <button class="btn btn-danger" id="btn-disappearing" data-testid="btn-disappearing"
+        aria-label="Disappearing Button" onclick="disappearingButton()">
+        May Disappear
+      </button>
+    </div>
+
+    <div id="s25-output" class="output mt-12" data-testid="flaky-output">// Flaky results appear here</div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 26: KEYBOARD ACTIONS
+       Automation concepts: keyboard(), type(), press(),
+       Tab navigation, Enter submit, Arrow keys
+       ============================================================ -->
+  <section id="s26" class="section" data-testid="section-keyboard">
+    <div class="section-number">26</div>
+    <h2>Keyboard Actions</h2>
+    <p class="section-desc">// Practice: press(), keyboard shortcuts, Tab order, Enter, Arrow keys, key combos</p>
+
+    <div class="grid-2">
+      <!-- Enter key handling -->
+      <div class="form-group">
+        <label for="kb-enter-input">Enter Key — Submit on Enter</label>
+        <input type="text" id="kb-enter-input" name="enterInput" placeholder="Press Enter to submit"
+          data-testid="kb-enter-input" aria-label="Enter Key Input"
+          onkeydown="if(event.key==='Enter'){setOutput('s26-output','✅ Enter pressed: '+this.value);this.value=''}" />
+      </div>
+
+      <!-- Tab navigation -->
+      <div class="form-group">
+        <label>Tab Key Navigation — Tab through fields</label>
+        <input type="text" id="kb-tab-1" name="tab1" placeholder="Field 1 (Tab →)"
+          data-testid="kb-tab-1" tabindex="1" style="margin-bottom:8px;"
+          onfocus="setOutput('s26-output','Focus: Field 1')" />
+        <input type="text" id="kb-tab-2" name="tab2" placeholder="Field 2 (Tab →)"
+          data-testid="kb-tab-2" tabindex="2"
+          onfocus="setOutput('s26-output','Focus: Field 2')" />
+      </div>
+
+      <!-- Arrow keys -->
+      <div class="form-group">
+        <label for="kb-arrow-input">Arrow Keys — Move value</label>
+        <input type="number" id="kb-arrow-input" name="arrowInput" value="0"
+          data-testid="kb-arrow-input" aria-label="Arrow Key Input"
+          min="0" max="100"
+          onkeyup="setOutput('s26-output','Arrow value: '+this.value)" />
+      </div>
+
+      <!-- Key combination -->
+      <div class="form-group">
+        <label for="kb-combo-input">Key Combination Detection</label>
+        <input type="text" id="kb-combo-input" name="comboInput"
+          placeholder="Try Ctrl+A, Shift+End..."
+          data-testid="kb-combo-input" aria-label="Combo Key Input"
+          onkeydown="detectKeyCombo(event)" />
+      </div>
+    </div>
+
+    <div id="s26-output" class="output" data-testid="keyboard-output">// Keyboard events appear here</div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 27: SLIDER ELEMENT
+       Automation concepts: range input, value change,
+       mouse drag on slider, inputEvent
+       ============================================================ -->
+  <section id="s27" class="section" data-testid="section-slider">
+    <div class="section-number">27</div>
+    <h2>Slider Element</h2>
+    <p class="section-desc">// Practice: range input, oninput, drag slider, getValue, set value via JS</p>
+
+    <div style="max-width:500px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <label class="text-muted" for="slider-main">Automation Coverage (%)</label>
+        <span id="slider-val" data-testid="slider-value"
+          style="color:var(--accent);font-family:var(--mono);font-weight:700;">50%</span>
+      </div>
+      <input type="range" id="slider-main" name="coverage" min="0" max="100" value="50" step="1"
+        data-testid="main-slider" aria-label="Coverage Slider"
+        oninput="document.getElementById('slider-val').textContent=this.value+'%'" />
+
+      <div style="display:flex;justify-content:space-between;margin-top:4px;">
+        <span class="text-muted">0</span>
+        <span class="text-muted">50</span>
+        <span class="text-muted">100</span>
+      </div>
+
+      <!-- Second slider: step=5 -->
+      <div style="margin-top:20px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+          <label class="text-muted" for="slider-step">Priority Level (step=5)</label>
+          <span id="slider-step-val" data-testid="slider-step-value"
+            style="color:var(--accent2);font-family:var(--mono);font-weight:700;">25</span>
+        </div>
+        <input type="range" id="slider-step" name="priority" min="0" max="100" value="25" step="5"
+          data-testid="step-slider" aria-label="Priority Slider"
+          oninput="document.getElementById('slider-step-val').textContent=this.value" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 28: DATE PICKER
+       Automation concepts: date input type, getValue,
+       sendKeys date format, min/max constraints
+       ============================================================ -->
+  <section id="s28" class="section" data-testid="section-datepicker">
+    <div class="section-number">28</div>
+    <h2>Date Picker</h2>
+    <p class="section-desc">// Practice: date input, date format, min/max, getValue, sendKeys</p>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label for="dp-single">Single Date</label>
+        <input type="date" id="dp-single" name="singleDate"
+          data-testid="date-picker-single" aria-label="Single Date Picker"
+          onchange="setOutput('s28-output','Selected date: '+this.value)" />
+      </div>
+
+      <div class="form-group">
+        <label for="dp-constrained">Constrained Date (min/max)</label>
+        <input type="date" id="dp-constrained" name="constrainedDate"
+          data-testid="date-picker-constrained" aria-label="Constrained Date Picker"
+          min="2024-01-01" max="2025-12-31"
+          onchange="setOutput('s28-output','Constrained date: '+this.value)" />
+        <p class="text-muted mt-8">Range: 2024-01-01 to 2025-12-31</p>
+      </div>
+
+      <div class="form-group">
+        <label for="dp-datetime">Date + Time</label>
+        <input type="datetime-local" id="dp-datetime" name="dateTime"
+          data-testid="date-time-picker" aria-label="Date Time Picker"
+          onchange="setOutput('s28-output','DateTime: '+this.value)" />
+      </div>
+
+      <div class="form-group">
+        <label for="dp-month">Month Picker</label>
+        <input type="month" id="dp-month" name="monthPick"
+          data-testid="month-picker" aria-label="Month Picker"
+          onchange="setOutput('s28-output','Month: '+this.value)" />
+      </div>
+    </div>
+
+    <div id="s28-output" class="output" data-testid="date-output">// Date selections appear here</div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 29: RESIZABLE ELEMENT
+       Automation concepts: resizable elements, getBoundingClientRect,
+       size assertions, resize handles
+       ============================================================ -->
+  <section id="s29" class="section" data-testid="section-resizable">
+    <div class="section-number">29</div>
+    <h2>Resizable Element</h2>
+    <p class="section-desc">// Practice: resize, getBoundingClientRect, size verification, overflow:auto</p>
+
+    <p class="text-muted" style="margin-bottom:12px;">Drag the bottom-right corner to resize. Check dimensions via JS:</p>
+
+    <div class="resizable-box" id="resizable-el" data-testid="resizable-box"
+      aria-label="Resizable Practice Box">
+      <p style="color:var(--accent);font-family:var(--mono);font-size:11px;margin-bottom:8px;">RESIZABLE BOX</p>
+      <p>el.getBoundingClientRect() → width, height</p>
+    </div>
+
+    <button class="btn btn-secondary mt-12" id="btn-check-size" data-testid="btn-check-size"
+      onclick="checkBoxSize()">Check Size</button>
+
+    <div id="s29-output" class="output mt-8" data-testid="resize-output">// Dimensions appear here</div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 30: COMPLEX DOM STRUCTURE
+       Automation concepts: XPath axes (parent, ancestor,
+       following-sibling, preceding-sibling), deeply nested,
+       complex CSS selector chains
+       ============================================================ -->
+  <section id="s30" class="section" data-testid="section-complex-dom">
+    <div class="section-number">30</div>
+    <h2>Complex DOM Structure</h2>
+    <p class="section-desc">// Practice: XPath axes, CSS nth-child, parent/ancestor/sibling selectors</p>
+
+    <div id="complex-root" class="nested-root" data-testid="complex-dom-root"
+      role="tree" aria-label="Complex DOM Tree">
+
+      <div class="department-node" id="dept-engineering" data-dept="engineering"
+        data-testid="dept-engineering">
+        <span class="nested-label" style="color:var(--accent);">Engineering</span>
+
+        <div class="nested-level team-node" id="team-frontend" data-team="frontend"
+          data-testid="team-frontend">
+          <span class="nested-label">Frontend Team</span>
+
+          <ul class="employee-list" id="list-frontend">
+            <li class="employee-item" id="emp-001" data-emp-id="001" data-role="lead"
+              data-testid="emp-001" aria-label="Employee Alice Chen">
+              <span class="emp-name" id="name-alice">Alice Chen</span>
+              <span class="emp-role badge badge-purple">Lead</span>
+              <button class="btn btn-secondary" style="padding:3px 8px;font-size:10px;"
+                data-testid="emp-001-action"
+                onclick="setOutput('s30-output','XPath: //li[@id=\'emp-001\']/button')">
+                Select
+              </button>
+            </li>
+            <li class="employee-item" id="emp-002" data-emp-id="002" data-role="senior"
+              data-testid="emp-002" aria-label="Employee Bob Martinez">
+              <span class="emp-name" id="name-bob">Bob Martinez</span>
+              <span class="emp-role badge badge-green">Senior</span>
+              <button class="btn btn-secondary" style="padding:3px 8px;font-size:10px;"
+                data-testid="emp-002-action"
+                onclick="setOutput('s30-output','CSS: #list-frontend .employee-item:nth-child(2) button')">
+                Select
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <div class="nested-level team-node" id="team-backend" data-team="backend"
+          data-testid="team-backend">
+          <span class="nested-label">Backend Team</span>
+
+          <ul class="employee-list" id="list-backend">
+            <li class="employee-item" id="emp-003" data-emp-id="003" data-role="lead"
+              data-testid="emp-003" aria-label="Employee Carol Singh">
+              <span class="emp-name" id="name-carol">Carol Singh</span>
+              <span class="emp-role badge badge-purple">Lead</span>
+              <button class="btn btn-secondary" style="padding:3px 8px;font-size:10px;"
+                data-testid="emp-003-action"
+                onclick="setOutput('s30-output','XPath: //li[@data-role=\'lead\'][2]/button')">
+                Select
+              </button>
+            </li>
+            <li class="employee-item" id="emp-004" data-emp-id="004" data-role="junior"
+              data-testid="emp-004" aria-label="Employee Dan Okafor">
+              <span class="emp-name" id="name-dan">Dan Okafor</span>
+              <span class="emp-role badge badge-yellow">Junior</span>
+              <button class="btn btn-secondary" style="padding:3px 8px;font-size:10px;"
+                data-testid="emp-004-action"
+                onclick="setOutput('s30-output','XPath sibling: //span[text()=\'Dan Okafor\']/following-sibling::button')">
+                Select
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="department-node nested-level" id="dept-qa" data-dept="qa"
+        data-testid="dept-qa" style="margin-top:10px;">
+        <span class="nested-label" style="color:var(--accent2);">QA Department</span>
+
+        <div class="nested-level" id="team-automation" data-testid="team-automation">
+          <span class="nested-label">Automation Team</span>
+
+          <ul class="employee-list" id="list-qa">
+            <li class="employee-item" id="emp-005" data-emp-id="005" data-role="architect"
+              data-testid="emp-005" aria-label="Employee Eve Nakamura">
+              <span class="emp-name" id="name-eve">Eve Nakamura</span>
+              <span class="emp-role badge badge-red">Architect</span>
+              <button class="btn btn-secondary" style="padding:3px 8px;font-size:10px;"
+                data-testid="emp-005-action"
+                onclick="setOutput('s30-output','XPath ancestor: //button[ancestor::li[@data-emp-id=\'005\']]')">
+                Select
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="s30-output" class="output mt-12" data-testid="complex-dom-output">
+      // Click any Select button to see the suggested locator strategy
+    </div>
+  </section>
+
+</div><!-- end .container -->
+
+<!-- ===================================================
+     JAVASCRIPT
+     =================================================== -->
+<script>
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function setOutput(id, msg) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = msg;
+}
+
+// ============================================================
+// SECTION 1: BASIC FORM
+// ============================================================
+function handleBasicFormSubmit(e) {
+  e.preventDefault();
+  const data = {
+    name: document.getElementById('txt-name').value,
+    email: document.getElementById('txt-email').value,
+    phone: document.getElementById('txt-phone').value,
+    bio: document.getElementById('txt-bio').value
+  };
+  setOutput('s1-output', JSON.stringify(data, null, 2));
+}
+
+// ============================================================
+// SECTION 2: BUTTON INTERACTIONS
+// ============================================================
+function enableDelayedBtn() {
+  const btn = document.getElementById('btn-delayed');
+  btn.textContent = 'Enabling...';
+  setOutput('s2-output', '⏳ Waiting 3 seconds...');
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.textContent = 'Now Click Me!';
+    setOutput('s2-output', '✅ Button enabled! Click it now.');
+  }, 3000);
+}
+
+function changeButtonText() {
+  const btn = document.getElementById('btn-text-change');
+  const texts = ['Text Changed! ✅', 'Changed Again! 🔄', 'One More Time! 🎯', 'Click to Change Text'];
+  const idx = texts.indexOf(btn.textContent);
+  btn.textContent = texts[(idx + 1) % texts.length];
+  setOutput('s2-output', '✅ Button text changed to: ' + btn.textContent);
+}
+
+// ============================================================
+// SECTION 3: CHECKBOXES
+// ============================================================
+function toggleSelectAll(el) {
+  document.querySelectorAll('.framework-chk').forEach(chk => chk.checked = el.checked);
+  setOutput('s3-output', 'Select All: ' + (el.checked ? 'checked all' : 'unchecked all'));
+}
+
+function toggleReveal(el) {
+  document.getElementById('reveal-text').style.display = el.checked ? 'block' : 'none';
+}
+
+function showRadioOutput() {
+  const sel = document.querySelector('input[name="level"]:checked');
+  if (sel) setOutput('s3-output', 'Selected level: ' + sel.value);
+}
+
+// ============================================================
+// SECTION 4: DROPDOWNS
+// ============================================================
+function toggleCustomDropdown() {
+  document.getElementById('custom-dd-menu').classList.toggle('open');
+}
+
+function selectCustomOption(text, val) {
+  document.getElementById('custom-dd-value').textContent = text;
+  document.getElementById('custom-dd-menu').classList.remove('open');
+  setOutput('s4-output', 'Custom dropdown selected: ' + val);
+}
+
+function showMultiSelect() {
+  const sel = document.getElementById('sel-skills');
+  const chosen = Array.from(sel.selectedOptions).map(o => o.value);
+  setOutput('s4-output', 'Multi-selected: ' + chosen.join(', '));
+}
+
+function loadDynamicOptions() {
+  const sel = document.getElementById('sel-dynamic');
+  sel.innerHTML = '<option value="">Loading...</option>';
+  setTimeout(() => {
+    const opts = [
+      { v: 'opt1', t: 'Dynamic Option A' },
+      { v: 'opt2', t: 'Dynamic Option B' },
+      { v: 'opt3', t: 'Dynamic Option C' },
+      { v: 'opt4', t: 'Dynamic Option D' }
+    ];
+    sel.innerHTML = '<option value="">-- Select --</option>';
+    opts.forEach(o => {
+      const op = document.createElement('option');
+      op.value = o.v; op.textContent = o.t;
+      sel.appendChild(op);
+    });
+    setOutput('s4-output', '✅ Dynamic options loaded!');
+  }, 1200);
+}
+
+// Close custom dropdown on outside click
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('custom-dd').contains(e.target)) {
+    document.getElementById('custom-dd-menu').classList.remove('open');
+  }
+});
+
+// ============================================================
+// SECTION 6: DYNAMIC CONTENT
+// ============================================================
+function showDelayedElement() {
+  const el = document.getElementById('s6-dynamic-el');
+  el.style.display = 'none';
+  setOutput('s6-output', '⏳ Waiting 2 seconds...');
+  setTimeout(() => { el.style.display = 'block'; }, 2000);
+}
+
+function hideElement() {
+  document.getElementById('s6-dynamic-el').style.display = 'none';
+  setOutput('s6-output', '🚫 Element hidden');
+}
+
+let counter = 0;
+function updateCounter() {
+  counter++;
+  document.getElementById('s6-counter').textContent = counter;
+}
+
+const dynTexts = [
+  'Text updated at: ' + new Date().toLocaleTimeString(),
+  '🔄 Content refreshed dynamically!',
+  '✅ Dynamic text change — iteration ' + Math.floor(Math.random() * 100),
+  'Original Text — click to update again'
+];
+let dynIdx = 0;
+function changeDynText() {
+  dynIdx = (dynIdx + 1) % dynTexts.length;
+  document.getElementById('s6-dyn-text').textContent = dynTexts[dynIdx];
+}
+
+function loadDynContent() {
+  const area = document.getElementById('s6-content-area');
+  area.innerHTML = '<span style="font-family:var(--mono);font-size:11px;color:var(--text-muted);">Loading...</span>';
+  setTimeout(() => {
+    area.innerHTML = '<div style="padding:12px;background:rgba(123,97,255,0.1);border:1px solid var(--accent2);border-radius:6px;font-family:var(--mono);font-size:12px;color:var(--accent2);">✅ Content loaded dynamically! data-testid="loaded-content"</div>';
+  }, 1500);
+}
+
+// ============================================================
+// SECTION 7: WAITS
+// ============================================================
+function showSpinner() {
+  const wrap = document.getElementById('s7-spinner-wrap');
+  wrap.style.display = 'flex';
+  setTimeout(() => {
+    wrap.style.display = 'none';
+    setOutput('s7-ajax-result', '✅ Spinner done — data loaded!');
+    document.getElementById('s7-ajax-result').style.display = 'block';
+  }, 3000);
+}
+
+function showDelayedText() {
+  const el = document.getElementById('s7-delayed-text');
+  el.style.display = 'none';
+  setTimeout(() => { el.style.display = 'block'; }, 2000);
+}
+
+let progressTimer = null;
+function startProgress() {
+  const fill = document.getElementById('s7-progress-fill');
+  const pct = document.getElementById('s7-progress-pct');
+  let val = 0;
+  fill.style.width = '0%';
+  pct.textContent = '0%';
+  if (progressTimer) clearInterval(progressTimer);
+  progressTimer = setInterval(() => {
+    val = Math.min(val + Math.random() * 12, 100);
+    fill.style.width = val.toFixed(0) + '%';
+    pct.textContent = val.toFixed(0) + '%';
+    if (val >= 100) { clearInterval(progressTimer); }
+  }, 250);
+}
+
+function simulateAjax() {
+  const el = document.getElementById('s7-ajax-result');
+  el.style.display = 'block';
+  el.textContent = '⏳ AJAX request sent...';
+  setTimeout(() => {
+    el.textContent = '✅ AJAX response: { status: 200, data: { id: 42, message: "Success" } }';
+  }, 2500);
+}
+
+// ============================================================
+// SECTION 8: TABLE
+// ============================================================
+const employees = [
+  { name: 'Alice Chen', dept: 'Engineering', role: 'Lead Engineer', salary: '$145,000' },
+  { name: 'Bob Martinez', dept: 'Engineering', role: 'Senior Dev', salary: '$128,000' },
+  { name: 'Carol Singh', dept: 'QA', role: 'QA Architect', salary: '$132,000' },
+  { name: 'Dan Okafor', dept: 'QA', role: 'Junior Tester', salary: '$72,000' },
+  { name: 'Eve Nakamura', dept: 'DevOps', role: 'DevOps Lead', salary: '$150,000' },
+  { name: 'Frank Liu', dept: 'DevOps', role: 'SRE Engineer', salary: '$138,000' },
+  { name: 'Grace Kim', dept: 'Product', role: 'Product Manager', salary: '$122,000' },
+  { name: 'Hiro Tanaka', dept: 'Design', role: 'UX Designer', salary: '$108,000' },
+  { name: 'Isla Brown', dept: 'Engineering', role: 'Frontend Dev', salary: '$115,000' },
+  { name: 'Jay Patel', dept: 'QA', role: 'Automation Lead', salary: '$125,000' },
+  { name: 'Kim Nguyen', dept: 'Design', role: 'UI Designer', salary: '$98,000' },
+  { name: 'Lena Davis', dept: 'Product', role: 'Scrum Master', salary: '$112,000' },
+];
+
+let sortState = { col: -1, asc: true };
+let currentPage = 1;
+const pageSize = 5;
+let filteredData = [...employees];
+
+function renderTable() {
+  const body = document.getElementById('table-body');
+  const start = (currentPage - 1) * pageSize;
+  const pageData = filteredData.slice(start, start + pageSize);
+
+  body.innerHTML = pageData.map((e, i) =>
+    `<tr id="row-${start+i}" data-testid="table-row-${start+i}">
+      <td data-testid="cell-name-${start+i}">${e.name}</td>
+      <td data-testid="cell-dept-${start+i}">${e.dept}</td>
+      <td data-testid="cell-role-${start+i}">${e.role}</td>
+      <td data-testid="cell-salary-${start+i}">${e.salary}</td>
+    </tr>`
+  ).join('');
+
+  document.getElementById('s8-row-count').textContent =
+    `Showing ${pageData.length} of ${filteredData.length} rows`;
+
+  renderPagination();
+}
+
+function renderPagination() {
+  const total = Math.ceil(filteredData.length / pageSize);
+  const pag = document.getElementById('table-pagination');
+  let html = '';
+  for (let i = 1; i <= total; i++) {
+    html += `<button class="page-btn${i===currentPage?' active':''}"
+      data-testid="page-btn-${i}" onclick="gotoPage(${i})">${i}</button>`;
+  }
+  pag.innerHTML = html;
+}
+
+function gotoPage(p) { currentPage = p; renderTable(); }
+
+function filterTable() {
+  const q = document.getElementById('table-search').value.toLowerCase();
+  filteredData = employees.filter(e =>
+    Object.values(e).some(v => v.toLowerCase().includes(q))
+  );
+  currentPage = 1;
+  renderTable();
+}
+
+function sortTable(col) {
+  const keys = ['name', 'dept', 'role', 'salary'];
+  if (sortState.col === col) sortState.asc = !sortState.asc;
+  else { sortState.col = col; sortState.asc = true; }
+  filteredData.sort((a, b) => {
+    const av = a[keys[col]], bv = b[keys[col]];
+    return sortState.asc ? av.localeCompare(bv) : bv.localeCompare(av);
+  });
+  ['sort-0','sort-1','sort-2','sort-3'].forEach((id, i) => {
+    document.getElementById(id).textContent = i === col ? (sortState.asc ? '↑' : '↓') : '↕';
+  });
+  currentPage = 1;
+  renderTable();
+}
+
+// Init table
+renderTable();
+
+// ============================================================
+// SECTION 9: ALERTS
+// ============================================================
+function triggerSimpleAlert() {
+  alert('This is a Simple Alert!\nTest data-testid: btn-simple-alert');
+  setOutput('s9-output', '✅ Simple alert was shown and dismissed.');
+}
+
+function triggerConfirmAlert() {
+  const result = confirm('Are you sure you want to proceed?\nClick OK to accept, Cancel to dismiss.');
+  setOutput('s9-output', '✅ Confirm alert result: ' + (result ? 'ACCEPTED' : 'DISMISSED'));
+}
+
+function triggerPromptAlert() {
+  const result = prompt('Enter your automation framework name:', 'Playwright');
+  setOutput('s9-output', result !== null
+    ? '✅ Prompt input: ' + result
+    : '🚫 Prompt was cancelled');
+}
+
+// ============================================================
+// SECTION 10: MODAL
+// ============================================================
+function openModal() {
+  document.getElementById('main-modal').classList.add('open');
+  setOutput('s10-output', '✅ Modal opened — id: main-modal');
+}
+
+function closeModal(action) {
+  const val = document.getElementById('modal-input').value;
+  document.getElementById('main-modal').classList.remove('open');
+  setOutput('s10-output', '✅ Modal ' + action + '. Input value: "' + val + '"');
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('main-modal')) {
+    closeModal('closed via overlay click');
+  }
+}
+
+// ============================================================
+// SECTION 12: SHADOW DOM
+// ============================================================
+class MyWidget extends HTMLElement {
+  constructor() {
+    super();
+    const shadow = this.attachShadow({ mode: 'open' });
+    shadow.innerHTML = `
+      <style>
+        :host { display: block; }
+        .widget { background: #1c2030; border: 1px dashed #7b61ff; border-radius: 8px; padding: 16px; }
+        label { font-family: monospace; font-size: 11px; color: #64748b; display: block; margin-bottom: 6px; }
+        input { width: 100%; background: #0b0d11; border: 1px solid #2a2f3d; color: #e2e8f0;
+                padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 12px;
+                outline: none; box-sizing: border-box; margin-bottom: 10px; }
+        input:focus { border-color: #7b61ff; }
+        button { background: #7b61ff; color: #fff; border: none; padding: 8px 16px;
+                 border-radius: 6px; cursor: pointer; font-family: monospace; font-size: 12px; font-weight: 700; }
+        #shadow-label { color: #00e5a0; font-family: monospace; font-size: 12px; margin-top: 8px; }
+      </style>
+      <div class="widget" data-testid="shadow-widget">
+        <label for="shadow-input">Shadow DOM Input (mode: open)</label>
+        <input type="text" id="shadow-input" name="shadowField"
+          placeholder="Inside Shadow DOM..." />
+        <button id="shadow-btn" onclick="
+          this.getRootNode().getElementById('shadow-label').textContent =
+          '✅ Shadow clicked! Value: ' + this.getRootNode().getElementById('shadow-input').value">
+          Shadow Button
+        </button>
+        <div id="shadow-label">Access via: el.shadowRoot.querySelector('#shadow-input')</div>
+      </div>
+    `;
+  }
+}
+customElements.define('my-widget', MyWidget);
+
+// ============================================================
+// SECTION 13: DRAG AND DROP
+// ============================================================
+function dragStart(e) {
+  e.dataTransfer.setData('text/plain', e.target.id);
+  e.dataTransfer.setData('text/content', e.target.textContent.trim());
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  const id = e.dataTransfer.getData('text/plain');
+  const content = e.dataTransfer.getData('text/content');
+  e.target.classList.remove('over');
+  e.target.innerHTML = `<span style="color:var(--accent)">✅ Dropped: ${content}</span>`;
+  setOutput('s13-output', `✅ "${content}" dropped successfully! Source ID: ${id}`);
+}
+
+// ============================================================
+// SECTION 16: FILE UPLOAD
+// ============================================================
+function displayFileName(input, outputId) {
+  const files = Array.from(input.files);
+  if (files.length === 0) {
+    setOutput(outputId, '// No file selected');
+    return;
+  }
+  const names = files.map(f => `${f.name} (${(f.size / 1024).toFixed(1)} KB)`).join(', ');
+  setOutput(outputId, '✅ Files: ' + names);
+}
+
+// ============================================================
+// SECTION 17:
